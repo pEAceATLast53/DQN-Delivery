@@ -36,7 +36,6 @@ class ScenarioDustGeneration(object):
             return None
 
     def update_state(self, world):
-        cur_alive_landmarks = []
         poses = []
         for i, landmark in enumerate(world.landmarks):
             if world.scenario['landmark time'][i] == world.time_t:
@@ -80,7 +79,6 @@ class World:
         self.adj_mat = self.get_adjacency_matrix()
 
         self.lidar_range = args.lidar_range
-        self.lidar_delta = 12
 
         self.action_mapping = {0: (0, 0), 1: (-1, 0), 2: (0, 1), 3: (1, 0),
                                4: (0, -1)}
@@ -110,7 +108,6 @@ class World:
         self.COLLISION_PENALTY = (-1) * args.collision_penalty
         self.TIME_PENALTY = (-1) * args.time_penalty
         self.max_episode_len = args.max_episode_len
-        patch_shape = (self.lidar_range*2+1,self.lidar_range*2+1,3)
 
         self.dust_model = ScenarioDustGeneration(self)
         self.reset()
@@ -199,6 +196,8 @@ class World:
         self.agent.gps = np.array(gps)
 
         alive_landmarks_h, alive_landmarks_w = self.dust_model.update_state(self)
+        if len(alive_landmarks_h) > 0:
+            self.world_state[alive_landmarks_h, alive_landmarks_w, 1] = 1.0
         self.time_t += 1
 
     def reward(self):
@@ -221,8 +220,7 @@ class World:
 
     def observation(self):
         map_obs = self.get_patch()
-        _, lidar_obs = self.lidar()
-        self.agent.state.obs = {'map': map_obs, 'lidar':lidar_obs, 'dists': self.agent.gps}
+        self.agent.state.obs = {'map': map_obs, 'dists': self.agent.gps}
         return self.agent.state.obs
 
     def get_dist(self, src, target):
@@ -261,7 +259,7 @@ class World:
 
     def move_agent(self):
         if [self.agent.state.next_pos[0], self.agent.state.next_pos[1]] in self.free_area:
-            self.agent.state.p_pos = self.agent.state.next_pos
+            self.agent.state.p_pos = [self.agent.state.next_pos[0], self.agent.state.next_pos[1]]
                                              
     def get_patch(self):
         h,w = self.agent.state.p_pos
@@ -278,34 +276,6 @@ class World:
         agent_patch[start_h:start_h + patch.shape[0],start_w:start_w + patch.shape[1]] = patch
 
         return agent_patch
-
-    def lidar(self):
-        h, w = self.agent.state.p_pos
-        min_h = max(0, h-self.lidar_range)
-        max_h = min(h+self.lidar_range+1, self.map_H)
-        min_w = max(0, w-self.lidar_range)
-        max_w = min(w+self.lidar_range+1, self.map_W)
-        agent_patch = self.map[min_h:max_h, min_w:max_w]
-
-        obstacles = np.stack(np.where(agent_patch != 255),axis=1) + np.array([h-self.lidar_range,w-self.lidar_range]).reshape(1,2)
-        vectors = np.ones([self.lidar_delta,2]) * self.lidar_range
-        dists = np.ones(self.lidar_delta) * self.lidar_range
-        for (obs_h,obs_w) in obstacles:
-            dh = obs_h - h
-            dw = obs_w - w
-            th = math.atan2(dw, dh)
-            th_index = int(((th + np.pi)/(2 * np.pi))*self.lidar_delta)
-            if th_index == self.lidar_delta:
-                th_index = 0
-            orig_dist = dists[th_index]
-            curr_dist = math.hypot(dh,dw)
-            if orig_dist > curr_dist:
-                vectors[th_index] = [dh,dw]
-                dists[th_index] = curr_dist
-
-        vectors = -vectors
-        return vectors, dists
-
 
     def get_free_areas(self):
         h, w = np.where(self.map == 255)
