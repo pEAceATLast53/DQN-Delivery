@@ -1,4 +1,4 @@
-from core import Agent, Landmark
+from env.core import Agent, Landmark
 import cv2
 import copy
 import os
@@ -255,7 +255,8 @@ class World:
         return distances[target_idx], shortest_path
 
     def state_transition(self):
-        return self.agent.state.p_pos + self.action_mapping[self.agent.action.u]
+        return [self.agent.state.p_pos[0] + self.action_mapping[self.agent.action.u][0], \
+            self.agent.state.p_pos[1] + self.action_mapping[self.agent.action.u][1]]
 
     def move_agent(self):
         if [self.agent.state.next_pos[0], self.agent.state.next_pos[1]] in self.free_area:

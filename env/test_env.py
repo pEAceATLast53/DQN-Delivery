@@ -15,8 +15,8 @@ parser.add_argument('--max_episode_len', default=300)
 
 args = parser.parse_args()
 
-from environment import Env
-from world import World
+from env.environment import Env
+from env.world import World
 import random
 import sys
 if '/opt/ros/kinetic/lib/python2.7/dist-packages' in sys.path:
