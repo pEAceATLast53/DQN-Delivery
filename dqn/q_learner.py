@@ -38,9 +38,10 @@ class QLearner:
         q_out = self.shared_fc(torch.cat([coord_out, map_out], -1))
         chosen_q_out = torch.gather(q_out, dim=-1, index=batch_a)
 
-        target_coord_out = torch.sum(self.target_coord_fc(batch_obs_coord_next), 1)
-        target_map_out = self.target_map_cnn(batch_obs_map_next.permute(0, 3, 1, 2))
-        target_q_out = batch_r + 0.99 * (1 - batch_d) * torch.max(self.shared_fc(torch.cat([target_coord_out, target_map_out], dim=-1)), dim=-1)[0]
+        with torch.no_grad():
+            target_coord_out = torch.sum(self.target_coord_fc(batch_obs_coord_next), 1)
+            target_map_out = self.target_map_cnn(batch_obs_map_next.permute(0, 3, 1, 2))
+            target_q_out = batch_r + 0.99 * (1 - batch_d) * torch.max(self.shared_fc(torch.cat([target_coord_out, target_map_out], dim=-1)), dim=-1)[0]
 
         self.loss = ((chosen_q_out - target_q_out) ** 2).mean()
 
