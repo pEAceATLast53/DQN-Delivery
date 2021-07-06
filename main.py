@@ -49,7 +49,7 @@ for episode in range(args.num_episodes):
     for idx, l in enumerate(world.landmarks):
         if not l.generated or l.found:
             continue
-        obs_coord[idx, 0] = obs_coord_dict[idx, 0]
+        obs_coord[idx, 0] = obs_coord_dict[idx, 0] * 0.01
         obs_coord[idx, 1] = np.cos(obs_coord_dict[idx, 1])
         obs_coord[idx, 2] = np.sin(obs_coord_dict[idx, 1])
 
@@ -69,7 +69,7 @@ for episode in range(args.num_episodes):
         for idx, l in enumerate(world.landmarks):
             if not l.generated or l.found:
                 continue
-            obs_coord_next[idx, 0] = obs_coord_next_dict[idx, 0]
+            obs_coord_next[idx, 0] = obs_coord_next_dict[idx, 0] * 0.01
             obs_coord_next[idx, 1] = np.cos(obs_coord_next_dict[idx, 1])
             obs_coord_next[idx, 2] = np.sin(obs_coord_next_dict[idx, 1])
 
