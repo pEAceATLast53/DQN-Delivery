@@ -13,7 +13,7 @@ class QLearner:
 
         self.coord_fc = FC1(3, 128)
         self.map_cnn = CNN(args)
-        self.shared_fc = FC2(256, 128, 5)
+        self.shared_fc = FC2(256, 512, 5)
 
         self.params = list(self.shared_fc.parameters())
         self.params += list(self.coord_fc.parameters())
