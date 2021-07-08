@@ -73,7 +73,8 @@ for episode in range(args.num_episodes):
             obs_coord_next[idx, 1] = np.cos(obs_coord_next_dict[idx, 1])
             obs_coord_next[idx, 2] = np.sin(obs_coord_next_dict[idx, 1])
 
-        trainer.replay_buffer.store(torch.Tensor([a]), torch.Tensor([r]), torch.Tensor([d]), torch.Tensor(obs_map), torch.Tensor(obs_coord), torch.Tensor(obs_map_next), torch.Tensor(obs_coord_next))
+        trainer.replay_buffer.store(torch.Tensor([a]).cpu(), torch.Tensor([r]).cpu(), torch.Tensor([d]).cpu(), \
+            torch.Tensor(obs_map).cpu(), torch.Tensor(obs_coord).cpu(), torch.Tensor(obs_map_next).cpu(), torch.Tensor(obs_coord_next).cpu())
 
         if trainer.replay_buffer.length >= args.update_start and t_total % args.update_interval == 0:
             trainer.train()
