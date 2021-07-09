@@ -22,7 +22,7 @@ parser.add_argument('--model_name', default='2_100', type=str)
 
 # RL hyperparameters
 parser.add_argument('--target_update_interval', default=200, type=int)  
-parser.add_argument('--update_interval', default=10) 
+parser.add_argument('--update_interval', default=100) 
 parser.add_argument('--batch_size', default=1024, type=int)
 parser.add_argument('--buffer_size', default=1000000, type=int)
 parser.add_argument('--init_epsilon', default=1.0, type=float)
