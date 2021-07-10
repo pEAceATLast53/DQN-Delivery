@@ -28,7 +28,7 @@ parser.add_argument('--buffer_size', default=1000000, type=int)
 parser.add_argument('--init_epsilon', default=1.0, type=float)
 parser.add_argument('--final_epsilon', default=0.05, type=float)
 parser.add_argument('--epsilon_anneal_time', default=50000, type=int)   
-parser.add_argument('--lr', default=0.0005, type=float)
+parser.add_argument('--lr', default=0.0001, type=float)
 parser.add_argument('--optim_alpha', default=0.99, type=float)           
 parser.add_argument('--optim_eps', default=0.00001, type=float)          
 
