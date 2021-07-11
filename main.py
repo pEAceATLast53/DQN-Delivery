@@ -44,19 +44,18 @@ t_total = 0
 for episode in range(args.num_episodes):
     episode_return = 0
     obs, _ = env.reset()
+    obs_map = obs['map']
+    obs_coord_dict = obs['dists']
+    obs_coord = np.full((args.num_landmarks, 3), -1)
+    for idx, l in enumerate(world.landmarks):
+        if not l.generated or l.found:
+            continue
+        obs_coord[idx, 0] = obs_coord_dict[idx, 0] * 0.01
+        obs_coord[idx, 1] = np.cos(obs_coord_dict[idx, 1])
+        obs_coord[idx, 2] = np.sin(obs_coord_dict[idx, 1])
 
     while True:
         t_total += 1
-
-        obs_map = obs['map']
-        obs_coord_dict = obs['dists']
-        obs_coord = np.full((args.num_landmarks, 3), -1)
-        for idx, l in enumerate(world.landmarks):
-            if not l.generated or l.found:
-                continue
-            obs_coord[idx, 0] = obs_coord_dict[idx, 0] * 0.01
-            obs_coord[idx, 1] = np.cos(obs_coord_dict[idx, 1])
-            obs_coord[idx, 2] = np.sin(obs_coord_dict[idx, 1])
 
         if random.random() < epsilon:
             a = random.randint(0, 4)
@@ -90,7 +89,8 @@ for episode in range(args.num_episodes):
         if d:
             break
 
-        obs = copy.deepcopy(obs_next)
+        obs_map = copy.deepcopy(obs_map_next)
+        obs_coord = copy.deepcopy(obs_coord_next)
 
     if episode % args.target_update_interval == 0:
         trainer.update_targets()
