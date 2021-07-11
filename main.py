@@ -10,6 +10,7 @@ if '/opt/ros/kinetic/lib/python2.7/dist-packages' in sys.path:
 import cv2, os, torch, random, joblib
 from tensorboardX import SummaryWriter
 import numpy as np
+import copy
 
 if torch.cuda.is_available():
     if args.device == 'cuda':
@@ -43,18 +44,20 @@ t_total = 0
 for episode in range(args.num_episodes):
     episode_return = 0
     obs, _ = env.reset()
-    obs_map = obs['map']
-    obs_coord_dict = obs['dists']
-    obs_coord = np.full((args.num_landmarks, 3), -1)
-    for idx, l in enumerate(world.landmarks):
-        if not l.generated or l.found:
-            continue
-        obs_coord[idx, 0] = obs_coord_dict[idx, 0] * 0.01
-        obs_coord[idx, 1] = np.cos(obs_coord_dict[idx, 1])
-        obs_coord[idx, 2] = np.sin(obs_coord_dict[idx, 1])
 
     while True:
         t_total += 1
+
+        obs_map = obs['map']
+        obs_coord_dict = obs['dists']
+        obs_coord = np.full((args.num_landmarks, 3), -1)
+        for idx, l in enumerate(world.landmarks):
+            if not l.generated or l.found:
+                continue
+            obs_coord[idx, 0] = obs_coord_dict[idx, 0] * 0.01
+            obs_coord[idx, 1] = np.cos(obs_coord_dict[idx, 1])
+            obs_coord[idx, 2] = np.sin(obs_coord_dict[idx, 1])
+
         if random.random() < epsilon:
             a = random.randint(0, 4)
         else:
@@ -63,8 +66,8 @@ for episode in range(args.num_episodes):
 
         obs_next, r, d, _ = env.step(a)
 
-        obs_map_next = obs['map']
-        obs_coord_next_dict = obs['dists']
+        obs_map_next = obs_next['map']
+        obs_coord_next_dict = obs_next['dists']
         obs_coord_next = np.full((args.num_landmarks, 3), -1)
         for idx, l in enumerate(world.landmarks):
             if not l.generated or l.found:
@@ -86,6 +89,8 @@ for episode in range(args.num_episodes):
 
         if d:
             break
+
+        obs = copy.deepcopy(obs_next)
 
     if episode % args.target_update_interval == 0:
         trainer.update_targets()
