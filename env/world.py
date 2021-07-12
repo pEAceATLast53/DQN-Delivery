@@ -178,6 +178,8 @@ class World:
         if len(alive_landmarks_h) > 0:
             self.world_state[alive_landmarks_h, alive_landmarks_w, 1] = 1.0
 
+        self.agent.action.prev_u = -1
+
         gps = []
         for l in self.landmarks:
             dist = self.get_euc_dist(l.state.p_pos, self.agent.state.p_pos)
@@ -220,7 +222,7 @@ class World:
 
     def observation(self):
         map_obs = self.get_patch()
-        self.agent.state.obs = {'map': map_obs, 'dists': self.agent.gps}
+        self.agent.state.obs = {'map': map_obs, 'dists': self.agent.gps, 'prev_action': self.agent.action.prev_u}
         return self.agent.state.obs
 
     def get_dist(self, src, target):

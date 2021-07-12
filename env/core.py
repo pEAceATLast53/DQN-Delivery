@@ -13,6 +13,7 @@ class AgentState(EntityState):
 class Action(object):
     def __init__(self):
         self.u = None
+        self.prev_u = None
 
 # properties and state of physical world entity
 class Entity(object):

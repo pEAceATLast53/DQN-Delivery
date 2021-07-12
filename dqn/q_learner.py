@@ -13,7 +13,7 @@ class QLearner:
 
         self.coord_fc = FC1(3, 128)
         self.map_cnn = CNN(args)
-        self.shared_fc = FC2(256, 512, 5)
+        self.shared_fc = FC2(259, 512, 5)
 
         self.params = list(self.shared_fc.parameters())
         self.params += list(self.coord_fc.parameters())
@@ -31,17 +31,18 @@ class QLearner:
 
     def train(self):
         self.count += 1
-        batch_a, batch_r, batch_d, batch_obs_map, batch_obs_coord, batch_obs_map_next, batch_obs_coord_next = self.replay_buffer.sample()
+        batch_a, batch_r, batch_d, batch_obs_map, batch_obs_coord, batch_obs_prev_action, batch_obs_pos, \
+            batch_obs_map_next, batch_obs_coord_next, batch_obs_prev_action_next, batch_obs_pos_next = self.replay_buffer.sample()
 
         coord_out = torch.sum(self.coord_fc(batch_obs_coord), 1)
         map_out = self.map_cnn(batch_obs_map.permute(0, 3, 1, 2))
-        q_out = self.shared_fc(torch.cat([coord_out, map_out], -1))
+        q_out = self.shared_fc(torch.cat([coord_out, map_out, batch_obs_prev_action, batch_obs_pos], -1))
         chosen_q_out = torch.gather(q_out, dim=-1, index=batch_a)
 
         with torch.no_grad():
             target_coord_out = torch.sum(self.target_coord_fc(batch_obs_coord_next), 1)
             target_map_out = self.target_map_cnn(batch_obs_map_next.permute(0, 3, 1, 2))
-            target_q_out = batch_r + 0.99 * (1 - batch_d) * torch.max(self.shared_fc(torch.cat([target_coord_out, target_map_out], dim=-1)), dim=-1)[0]
+            target_q_out = batch_r + 0.99 * (1 - batch_d) * torch.max(self.shared_fc(torch.cat([target_coord_out, target_map_out, batch_obs_prev_action_next, batch_obs_pos_next], dim=-1)), dim=-1)[0]
 
         self.loss = ((chosen_q_out - target_q_out) ** 2).mean()
 
@@ -52,11 +53,11 @@ class QLearner:
         self.writer.add_scalar('Loss', self.loss.item(), self.count)
         self.writer.add_scalar('Q Mean', chosen_q_out.mean().item(), self.count)
 
-    def select_action(self, obs_coord, obs_map):
+    def select_action(self, obs_coord, obs_map, obs_prev_action, obs_pos):
         with torch.no_grad():
             coord_out = torch.sum(self.coord_fc(obs_coord), 1)
             map_out = self.map_cnn(obs_map.permute(0, 3, 1, 2))
-            q_out = self.shared_fc(torch.cat([coord_out, map_out], -1)).squeeze(0)
+            q_out = self.shared_fc(torch.cat([coord_out, map_out, obs_prev_action, obs_pos], -1)).squeeze(0)
         return torch.argmax(q_out).item()
 
     def update_targets(self):

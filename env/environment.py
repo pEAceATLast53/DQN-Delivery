@@ -41,6 +41,8 @@ class Env():
 
     # set env action for a particular agent
     def _set_action(self, action, time=None):
+        if self.agent.action.u is not None:
+            self.agent.action.prev_u = self.agent.action.u
         self.agent.action.u = action
         self.agent.state.next_pos = self.world.state_transition()
 

@@ -53,6 +53,8 @@ for episode in range(args.num_episodes):
         obs_coord[idx, 0] = obs_coord_dict[idx, 0] * 0.01
         obs_coord[idx, 1] = np.cos(obs_coord_dict[idx, 1])
         obs_coord[idx, 2] = np.sin(obs_coord_dict[idx, 1])
+    obs_prev_action = [obs['prev_action']]
+    obs_pos = world.agent.state.p_pos
 
     while True:
         t_total += 1
@@ -61,7 +63,8 @@ for episode in range(args.num_episodes):
             a = random.randint(0, 4)
         else:
             a = trainer.select_action(torch.Tensor(obs_coord).to(args.device).float().unsqueeze(0), \
-                torch.Tensor(obs_map).to(args.device).float().unsqueeze(0))
+                torch.Tensor(obs_map).to(args.device).float().unsqueeze(0), torch.Tensor(obs_prev_action).to(args.device).float().unsqueeze(0), \
+                torch.Tensor(obs_pos).to(args.device).float().unsqueeze(0))
 
         obs_next, r, d, _ = env.step(a)
 
@@ -74,9 +77,12 @@ for episode in range(args.num_episodes):
             obs_coord_next[idx, 0] = obs_coord_next_dict[idx, 0] * 0.01
             obs_coord_next[idx, 1] = np.cos(obs_coord_next_dict[idx, 1])
             obs_coord_next[idx, 2] = np.sin(obs_coord_next_dict[idx, 1])
+        obs_prev_action_next = [obs_next['prev_action']]
+        obs_pos_next = world.agent.state.p_pos
 
         trainer.replay_buffer.store(torch.Tensor([a]).cpu(), torch.Tensor([r]).cpu(), torch.Tensor([d]).cpu(), \
-            torch.Tensor(obs_map).cpu(), torch.Tensor(obs_coord).cpu(), torch.Tensor(obs_map_next).cpu(), torch.Tensor(obs_coord_next).cpu())
+            torch.Tensor(obs_map).cpu(), torch.Tensor(obs_coord).cpu(), torch.Tensor(obs_prev_action).cpu(), torch.Tensor(obs_pos).cpu(), \
+            torch.Tensor(obs_map_next).cpu(), torch.Tensor(obs_coord_next).cpu(), torch.Tensor(obs_prev_action_next).cpu(), torch.Tensor(obs_pos_next).cpu())
 
         if trainer.replay_buffer.length >= args.update_start and t_total % args.update_interval == 0:
             trainer.train()
@@ -91,6 +97,8 @@ for episode in range(args.num_episodes):
 
         obs_map = copy.deepcopy(obs_map_next)
         obs_coord = copy.deepcopy(obs_coord_next)
+        obs_prev_action = copy.deepcopy(obs_prev_action_next)
+        obs_pos = copy.deepcopy(obs_pos_next)
 
     if episode % args.target_update_interval == 0:
         trainer.update_targets()
