@@ -45,9 +45,10 @@ class QLearner:
             target_q_out = batch_r + 0.99 * (1 - batch_d) * torch.max(self.shared_fc(torch.cat([target_coord_out, target_map_out, batch_obs_prev_action_next, batch_obs_pos_next], dim=-1)), dim=-1)[0]
 
         self.loss = ((chosen_q_out - target_q_out) ** 2).mean()
-
+        
         self.optimiser.zero_grad()
         self.loss.backward()
+        torch.nn.utils.clip_grad_norm_(self.params, 10.0)
         self.optimiser.step()
 
         self.writer.add_scalar('Loss', self.loss.item(), self.count)
