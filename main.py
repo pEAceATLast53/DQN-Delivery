@@ -54,7 +54,7 @@ for episode in range(args.num_episodes):
         obs_coord[idx, 1] = np.cos(obs_coord_dict[idx, 1])
         obs_coord[idx, 2] = np.sin(obs_coord_dict[idx, 1])
     obs_prev_action = [obs['prev_action']]
-    obs_pos = world.agent.state.p_pos
+    obs_pos = [world.agent.state.p_pos[0] * 0.01, world.agent.state.p_pos[1] * 0.01]
 
     while True:
         t_total += 1
@@ -78,7 +78,7 @@ for episode in range(args.num_episodes):
             obs_coord_next[idx, 1] = np.cos(obs_coord_next_dict[idx, 1])
             obs_coord_next[idx, 2] = np.sin(obs_coord_next_dict[idx, 1])
         obs_prev_action_next = [obs_next['prev_action']]
-        obs_pos_next = world.agent.state.p_pos
+        obs_pos_next = [world.agent.state.p_pos[0] * 0.01, world.agent.state.p_pos[1] * 0.01]
 
         trainer.replay_buffer.store(torch.Tensor([a]).cpu(), torch.Tensor([r]).cpu(), torch.Tensor([d]).cpu(), \
             torch.Tensor(obs_map).cpu(), torch.Tensor(obs_coord).cpu(), torch.Tensor(obs_prev_action).cpu(), torch.Tensor(obs_pos).cpu(), \
