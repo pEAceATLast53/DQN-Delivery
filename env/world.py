@@ -110,7 +110,7 @@ class World:
         self.max_episode_len = args.max_episode_len
 
         self.dust_model = ScenarioDustGeneration(self)
-        self.reset()
+        #self.reset()
 
     def sample_navigable_position(self, candidate_area=None):
         if candidate_area is None:
@@ -173,6 +173,11 @@ class World:
 
         self.agent.state.p_pos = self.scenario['agent']
         self.agent.reward = 0.0        
+
+        for l in self.landmarks:
+            l.generated = False
+            l.rewarded = False
+            l.found = False
         
         alive_landmarks_h, alive_landmarks_w = self.dust_model.reset(self) # world.scenario will be used
         if len(alive_landmarks_h) > 0:
@@ -185,7 +190,8 @@ class World:
             dist = self.get_euc_dist(l.state.p_pos, self.agent.state.p_pos)
             direction = math.atan2(*(l.state.p_pos - self.agent.state.p_pos))
             gps.append([dist, direction])
-        self.agent.gps = np.array(gps)            
+        self.agent.gps = np.array(gps) 
+        self.collision_count = 0           
   
     def step(self):
         self.world_state[:,:,1] = 0.0
@@ -263,6 +269,8 @@ class World:
     def move_agent(self):
         if [self.agent.state.next_pos[0], self.agent.state.next_pos[1]] in self.free_area:
             self.agent.state.p_pos = [self.agent.state.next_pos[0], self.agent.state.next_pos[1]]
+        else:
+            self.collision_count += 1
                                              
     def get_patch(self):
         h,w = self.agent.state.p_pos
