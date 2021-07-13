@@ -22,6 +22,7 @@ class ScenarioDustGeneration(object):
             for i, landmark in enumerate(world.landmarks):
                 landmark.state.p_pos = world.scenario['landmark pose'][i]
                 landmark.found = False
+                landmark.rewarded = False
                 landmark.id = i
                 landmark.generated = world.scenario['landmark time'][i] == False
                 if landmark.generated:
@@ -173,11 +174,6 @@ class World:
 
         self.agent.state.p_pos = self.scenario['agent']
         self.agent.reward = 0.0        
-
-        for l in self.landmarks:
-            l.generated = False
-            l.rewarded = False
-            l.found = False
         
         alive_landmarks_h, alive_landmarks_w = self.dust_model.reset(self) # world.scenario will be used
         if len(alive_landmarks_h) > 0:
