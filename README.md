@@ -12,14 +12,16 @@ If the agent's action results in the collision, then the agent stays on the same
 ### Observation
 1. 15 x 15 Egocentric Local Map
    - 1st channel : Grid map indicating the static obstacles around the agent
-   - 2nd channel : One-hot encodings of the order locations that are within the range of the local map.
+   - 2nd channel : One-hot encodings indicating the locations of the orders that are within the range of the local map.
 2. Euclidean (--distance_type = 'euc') / Geodesic (--distance_type = 'geo') distances to the orders.
 3. Bearing angles to the orders.
 4. Agent's current coordinate.
 5. Agent's previous action.
 ### Reward
-If the agent's action will result in a collision with a static obstacle, the agent receives a penalty of -0.1. It also receives a -0.01 penalty per each remaining order that has already been initiated.
+If the agent's action will result in a collision with a static obstacle, the agent receives a penalty of -0.1. It also receives a -0.01 penalty per each remaining order that has been initiated.
 #### Sparse Reward
 Every time the agent succeeds in a delivery, it receives +1.
 #### Dense Reward
 In addition to the sparse reward, the agent receives a progress reward, which is 0.1 * (previous_geodesic_distance_to_the_closest_order - current_geodesic_distance_to_the_closest_order).
+## Current Progress
+Training with only the sparse reward failed. However, including the dense reward seems to enable training. I will soon upload the results!
