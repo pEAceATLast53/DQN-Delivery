@@ -10,6 +10,11 @@ The agent is trained by DQN.
 The agent moves one grid in the N, W, S, E direction, or stays on the same grid in each time step.
 If the agent's action results in the collision, then the agent stays on the same grid.
 ### Observation
-The agent's observations are the relative coordinates of the initiated orders that the agent has not yet visited, and a 15x15 egocentric local map. The local map is comprised of 2 channels. The first channel is the grid map indicating the static obstacles arount the agent. The second channel shows the locations of the orders that are within the range of the local map.
+1. 15 x 15 Egocentric Local Map - 1st channel : Grid map indicating the static obstacles around the agent, 2nd channel : Locations of the orders that are within the range of the local map.
+2. Euclidean (--distance_type = 'euc') / Geodesic (--distance_type = 'geo') distances to the initiated orders.
+3. Bearing angles to the initiated orders.
 ### Reward
-Every time the agent succeeds in a delivery, it receives +1. If the agent's action will result in a collision with a static obstacle, the agent receives a penalty of -1. It also receives a -0.01 penalty per each remaining order that has already been initiated.
+If the agent's action will result in a collision with a static obstacle, the agent receives a penalty of -0.1. It also receives a -0.01 penalty per each remaining order that has already been initiated.
+#### Sparse Reward
+Every time the agent succeeds in a delivery, it receives +1.
+#### Dense Reward
