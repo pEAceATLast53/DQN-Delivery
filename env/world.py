@@ -78,8 +78,11 @@ class World:
                 self.map[xx - self.map_padding:xx + self.map_padding, yy - self.map_padding:yy + self.map_padding] = 0
         self.free_area, self.free_area_idx = self.get_free_areas()
         self.adj_mat = self.get_adjacency_matrix()
+        self.geo_dist_table = np.full((self.map_H, self.map_W, self.map_H, self.map_W), -1)
 
         self.lidar_range = args.lidar_range
+        self.distance_type = args.distance_type
+        self.reward_type = args.reward_type
 
         self.action_mapping = {0: (0, 0), 1: (-1, 0), 2: (0, 1), 3: (1, 0),
                                4: (0, -1)}
@@ -182,26 +185,51 @@ class World:
         self.agent.action.prev_u = -1
 
         gps = []
+        geo_dists = []
         for l in self.landmarks:
-            dist = self.get_euc_dist(l.state.p_pos, self.agent.state.p_pos)
+            if self.distance_type == 'euc':
+                dist = self.get_euc_dist(l.state.p_pos, self.agent.state.p_pos)
+            if self.distance_type == 'geo':
+                if self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]] == -1:
+                    self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]], _ = self.get_dist(self.agent.state.p_pos, l.state.p_pos)
+                dist = self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]]
+            if self.reward_type == 'dense':
+                if self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]] == -1:
+                    self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]], _ = self.get_dist(self.agent.state.p_pos, l.state.p_pos)
+                if l.generated and not l.found:
+                    geo_dists.append(self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]])
             direction = math.atan2(*(l.state.p_pos - self.agent.state.p_pos))
             gps.append([dist, direction])
         self.agent.gps = np.array(gps) 
+        if len(geo_dists) > 0:
+            self.prev_min_dist = min(geo_dists)
         self.collision_count = 0           
   
     def step(self):
         self.world_state[:,:,1] = 0.0
         self.move_agent()
-        gps = []
-        for l in self.landmarks:
-            dist = self.get_euc_dist(l.state.p_pos, self.agent.state.p_pos)
-            direction = math.atan2(*(l.state.p_pos - self.agent.state.p_pos))
-            gps.append([dist,direction])
-        self.agent.gps = np.array(gps)
-
         alive_landmarks_h, alive_landmarks_w = self.dust_model.update_state(self)
         if len(alive_landmarks_h) > 0:
             self.world_state[alive_landmarks_h, alive_landmarks_w, 1] = 1.0
+        gps = []
+        geo_dists = []
+        for l in self.landmarks:
+            if self.distance_type == 'euc':
+                dist = self.get_euc_dist(l.state.p_pos, self.agent.state.p_pos)
+            if self.distance_type == 'geo':
+                if self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]] == -1:
+                    self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]], _ = self.get_dist(self.agent.state.p_pos, l.state.p_pos)
+                dist = self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]]
+            if self.reward_type == 'dense':
+                if self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]] == -1:
+                    self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]], _ = self.get_dist(self.agent.state.p_pos, l.state.p_pos)
+                if l.generated and not l.found:
+                    geo_dists.append(self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]])
+            direction = math.atan2(*(l.state.p_pos - self.agent.state.p_pos))
+            gps.append([dist,direction])
+        self.agent.gps = np.array(gps)
+        if len(geo_dists) > 0:
+            self.curr_min_dist = min(geo_dists)
         self.time_t += 1
 
     def reward(self):
@@ -214,6 +242,10 @@ class World:
                 l.rewarded = True
             if l.generated and not l.found:
                 rew += self.TIME_PENALTY
+        if self.reward_type == 'dense':
+            if abs(self.prev_min_dist - self.curr_min_dist) <= 1:
+                rew += 0.1 * (self.prev_min_dist - self.curr_min_dist)
+            self.prev_min_dist = self.curr_min_dist
         return rew
 
     def done(self):
@@ -227,6 +259,7 @@ class World:
         self.agent.state.obs = {'map': map_obs, 'dists': self.agent.gps, 'prev_action': self.agent.action.prev_u}
         return self.agent.state.obs
 
+    #Returns geodesic distance and shortest path between src and target by Dijkstra.
     def get_dist(self, src, target):
         if (src == target).all() : return 0.0, []
         src_idx = self.free_area_idx[src[0], src[1]]
@@ -306,21 +339,11 @@ class World:
                         if adj_idx > -1:
                             adj_mat[curr_idx, adj_idx] = 1
                             adj_mat[adj_idx, curr_idx] = 1
-                        if h+1 < self.map_H:
-                            adj_idx = self.free_area_idx[h+1, w+1]
-                            if adj_idx > -1:
-                                adj_mat[curr_idx, adj_idx] = np.sqrt(2)
-                                adj_mat[adj_idx, curr_idx] = np.sqrt(2)
                     if h+1 < self.map_H:
                         adj_idx = self.free_area_idx[h+1, w]
                         if adj_idx > -1:
                             adj_mat[curr_idx, adj_idx] = 1
                             adj_mat[adj_idx, curr_idx] = 1
-                        if w-1 >= 0:
-                            adj_idx = self.free_area_idx[h+1, w-1]
-                            if adj_idx > -1:
-                                adj_mat[curr_idx, adj_idx] = np.sqrt(2)
-                                adj_mat[adj_idx, curr_idx] = np.sqrt(2)
         return adj_mat
 
     def render(self):
