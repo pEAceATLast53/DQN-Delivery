@@ -22,3 +22,4 @@ If the agent's action will result in a collision with a static obstacle, the age
 #### Sparse Reward
 Every time the agent succeeds in a delivery, it receives +1.
 #### Dense Reward
+In addition to the sparse reward, the agent receives a progress reward, which is 0.1 * (previous_geodesic_distance_to_the_closest_order - current_geodesic_distance_to_the_closest_order).
