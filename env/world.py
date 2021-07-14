@@ -191,11 +191,16 @@ class World:
                 dist = self.get_euc_dist(l.state.p_pos, self.agent.state.p_pos)
             if self.distance_type == 'geo':
                 if self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]] == -1:
-                    self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]], _ = self.get_dist(self.agent.state.p_pos, l.state.p_pos)
+                    self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]], _ = \
+                        self.get_dist(self.agent.state.p_pos, l.state.p_pos)
+                    self.geo_dist_table[l.state.p_pos[0], l.state.p_pos[1], self.agent.state.p_pos[0], self.agent.state.p_pos[1]] = \
+                        self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]]
                 dist = self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]]
             if self.reward_type == 'dense':
                 if self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]] == -1:
                     self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]], _ = self.get_dist(self.agent.state.p_pos, l.state.p_pos)
+                    self.geo_dist_table[l.state.p_pos[0], l.state.p_pos[1], self.agent.state.p_pos[0], self.agent.state.p_pos[1]] = \
+                        self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]]
                 if l.generated and not l.found:
                     geo_dists.append(self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]])
             direction = math.atan2(*(l.state.p_pos - self.agent.state.p_pos))
@@ -219,10 +224,14 @@ class World:
             if self.distance_type == 'geo':
                 if self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]] == -1:
                     self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]], _ = self.get_dist(self.agent.state.p_pos, l.state.p_pos)
+                    self.geo_dist_table[l.state.p_pos[0], l.state.p_pos[1], self.agent.state.p_pos[0], self.agent.state.p_pos[1]] = \
+                        self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]]
                 dist = self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]]
             if self.reward_type == 'dense':
                 if self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]] == -1:
                     self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]], _ = self.get_dist(self.agent.state.p_pos, l.state.p_pos)
+                    self.geo_dist_table[l.state.p_pos[0], l.state.p_pos[1], self.agent.state.p_pos[0], self.agent.state.p_pos[1]] = \
+                        self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]]
                 if l.generated and not l.found:
                     geo_dists.append(self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]])
             direction = math.atan2(*(l.state.p_pos - self.agent.state.p_pos))
