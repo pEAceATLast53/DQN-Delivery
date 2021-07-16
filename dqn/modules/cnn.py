@@ -26,6 +26,7 @@ class CNN(nn.Module):
         self.conv1 = BasicConv(2, 8, kernel_size = 3, padding=1)
         self.fc1 = nn.Linear(8 * (self.map_size[0]//2) * (self.map_size[1]//2), 128, bias=True)
         self.fc2 = nn.Linear(128, 128, bias=True)
+        self.fc3 = nn.Linear(128, 128, bias=True)
         self.relu = nn.ReLU(inplace=True)
         self.maxpool = nn.MaxPool2d(kernel_size=2, stride=2)
         self.lrelu = nn.LeakyReLU(inplace=True)
@@ -37,5 +38,7 @@ class CNN(nn.Module):
         x = self.fc1(x)
         x = self.lrelu(x)
         x = self.fc2(x)
+        x = self.lrelu(x)
+        x = self.fc3(x)
         x = self.lrelu(x)
         return x

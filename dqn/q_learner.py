@@ -1,6 +1,6 @@
 import copy
 from dqn.modules.cnn import CNN
-from dqn.modules.fc import FC1, FC2
+from dqn.modules.fc import FC1, FC2, FC3
 from dqn.replay_buffer import ReplayBuffer
 
 import torch
@@ -11,9 +11,9 @@ class QLearner:
     def __init__(self, args, writer):
         self.args = args
 
-        self.coord_fc = FC1(3, 128)
+        self.coord_fc = FC2(3, 128, 128)
         self.map_cnn = CNN(args)
-        self.shared_fc = FC2(259, 512, 5)
+        self.shared_fc = FC3(259, 512, 5)
 
         self.params = list(self.shared_fc.parameters())
         self.params += list(self.coord_fc.parameters())
