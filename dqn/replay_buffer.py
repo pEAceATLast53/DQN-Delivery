@@ -1,21 +1,20 @@
 import collections, random, torch
 
 class ReplayBuffer():
-    def __init__(self, args):
-        self.buffer_a = collections.deque(maxlen = args.buffer_size)
-        self.buffer_r = collections.deque(maxlen = args.buffer_size)
-        self.buffer_d = collections.deque(maxlen = args.buffer_size)
-        self.buffer_obs_map = collections.deque(maxlen = args.buffer_size)
-        self.buffer_obs_coord = collections.deque(maxlen = args.buffer_size)
-        self.buffer_obs_prev_action = collections.deque(maxlen= args.buffer_size)
-        self.buffer_obs_pos = collections.deque(maxlen = args.buffer_size)
-        self.buffer_obs_map_next = collections.deque(maxlen = args.buffer_size)
-        self.buffer_obs_coord_next = collections.deque(maxlen = args.buffer_size)
-        self.buffer_obs_prev_action_next = collections.deque(maxlen= args.buffer_size)
-        self.buffer_obs_pos_next = collections.deque(maxlen= args.buffer_size)
+    def __init__(self, buffer_size, batch_size):
+        self.buffer_a = collections.deque(maxlen = buffer_size)
+        self.buffer_r = collections.deque(maxlen = buffer_size)
+        self.buffer_d = collections.deque(maxlen = buffer_size)
+        self.buffer_obs_map = collections.deque(maxlen = buffer_size)
+        self.buffer_obs_coord = collections.deque(maxlen = buffer_size)
+        self.buffer_obs_prev_action = collections.deque(maxlen= buffer_size)
+        self.buffer_obs_pos = collections.deque(maxlen = buffer_size)
+        self.buffer_obs_map_next = collections.deque(maxlen = buffer_size)
+        self.buffer_obs_coord_next = collections.deque(maxlen = buffer_size)
+        self.buffer_obs_prev_action_next = collections.deque(maxlen= buffer_size)
+        self.buffer_obs_pos_next = collections.deque(maxlen= buffer_size)
         
-        self.batch_size = args.batch_size
-        self.device = args.device
+        self.batch_size = batch_size
         self.length = 0
 
     def store(self, a, r, d, obs_map, obs_coord, obs_prev_action, obs_pos, obs_map_next, obs_coord_next, obs_prev_action_next, obs_pos_next):
@@ -47,9 +46,9 @@ class ReplayBuffer():
         obs_prev_action_next_list = [self.buffer_obs_prev_action_next[idx] for idx in batch_idx]
         obs_pos_next_list = [self.buffer_obs_pos_next[idx] for idx in batch_idx]
 
-        return torch.stack(a_list).to(self.device).long(), torch.stack(r_list).to(self.device).float(), \
-            torch.stack(d_list).to(self.device).long(), torch.stack(obs_map_list).to(self.device).float(), \
-            torch.stack(obs_coord_list).to(self.device).float(), torch.stack(obs_prev_action_list).to(self.device).float(), \
-            torch.stack(obs_pos_list).to(self.device).float(), \
-            torch.stack(obs_map_next_list).to(self.device).float(), torch.stack(obs_coord_next_list).to(self.device).float(), \
-            torch.stack(obs_prev_action_next_list).to(self.device).float(), torch.stack(obs_pos_next_list).to(self.device).float()
+        return torch.stack(a_list).cuda().long(), torch.stack(r_list).cuda().float(), \
+            torch.stack(d_list).cuda().long(), torch.stack(obs_map_list).cuda().float(), \
+            torch.stack(obs_coord_list).cuda().float(), torch.stack(obs_prev_action_list).cuda().float(), \
+            torch.stack(obs_pos_list).cuda().float(), \
+            torch.stack(obs_map_next_list).cuda().float(), torch.stack(obs_coord_next_list).cuda().float(), \
+            torch.stack(obs_prev_action_next_list).cuda().float(), torch.stack(obs_pos_next_list).cuda().float()

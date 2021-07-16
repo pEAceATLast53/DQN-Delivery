@@ -6,7 +6,7 @@ parser.add_argument('--map_name', default='dist_test.png')
 
 parser.add_argument('--lidar_range', default=7)
 parser.add_argument('--num_landmarks', default=2)
-parser.add_argument('--distance_type', default='geo', choices = ['euc', 'geo'])
+parser.add_argument('--distance_type', default='euc', choices = ['euc', 'geo'])
 parser.add_argument('--reward_type', default='dense', choices = ['sparse', 'dense'])
 
 parser.add_argument('--success_reward', default=1)
@@ -18,9 +18,7 @@ parser.add_argument("--num-episodes", type=int, default=500000, help="number of 
 parser.add_argument("--update_start", default=10000)
 parser.add_argument("--save_interval", default=10000)
 
-parser.add_argument('--device', default='cuda')
-
-parser.add_argument('--model_name', default='2_100_geo_dense', type=str)
+parser.add_argument('--model_name', default='2_100_euc_dense_bigger', type=str)
 
 # RL hyperparameters
 parser.add_argument('--target_update_interval', default=500, type=int)  
@@ -30,7 +28,7 @@ parser.add_argument('--buffer_size', default=900000, type=int)
 parser.add_argument('--init_epsilon', default=1.0, type=float)
 parser.add_argument('--final_epsilon', default=0.05, type=float)
 parser.add_argument('--epsilon_anneal_time', default=50000, type=int)   
-parser.add_argument('--lr', default=0.0003, type=float)
+parser.add_argument('--lr', default=0.0001, type=float)
 parser.add_argument('--optim_alpha', default=0.99, type=float)           
 parser.add_argument('--optim_eps', default=0.00001, type=float)          
 

@@ -12,13 +12,7 @@ from tensorboardX import SummaryWriter
 import numpy as np
 import copy
 
-if torch.cuda.is_available():
-    if args.device == 'cuda':
-        torch.set_default_tensor_type('torch.cuda.FloatTensor')
-    else:
-        torch.set_default_tensor_type('torch.FloatTensor')
-else:
-    torch.set_default_tensor_type('torch.FloatTensor')
+torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
 save_dir = './results'
 model_save_dir = save_dir + '/models/' + args.model_name
@@ -62,9 +56,9 @@ for episode in range(args.num_episodes):
         if random.random() < epsilon:
             a = random.randint(0, 4)
         else:
-            a = trainer.select_action(torch.Tensor(obs_coord).to(args.device).float().unsqueeze(0), \
-                torch.Tensor(obs_map).to(args.device).float().unsqueeze(0), torch.Tensor(obs_prev_action).to(args.device).float().unsqueeze(0), \
-                torch.Tensor(obs_pos).to(args.device).float().unsqueeze(0))
+            a = trainer.select_action(torch.Tensor(obs_coord).cuda().float().unsqueeze(0), \
+                torch.Tensor(obs_map).cuda().float().unsqueeze(0), torch.Tensor(obs_prev_action).cuda().float().unsqueeze(0), \
+                torch.Tensor(obs_pos).cuda().float().unsqueeze(0))
 
         obs_next, r, d, _ = env.step(a)
 
@@ -106,5 +100,12 @@ for episode in range(args.num_episodes):
     if episode % args.save_interval == 0:
         trainer.save_models(model_save_dir)
 
+    num_found_landmarks = 0
+    for l in world.landmarks:
+        if l.generated and l.found:
+            num_found_landmarks += 1
+            
     trainer.writer.add_scalar('Episode Return', episode_return, episode+1)
-    print("Episode : ", episode+1, "Return : ", episode_return, "Duration : ", world.time_t)
+    trainer.writer.add_scalar('Number of Successful Orders', num_found_landmarks, episode+1)
+    trainer.writer.add_scalar('Number of Collisions', world.collision_count, episode+1)
+    print("Episode : ", episode+1, "Return : ", episode_return, "# of successful orders : ", num_found_landmarks, "# of collisions : ", world.collision_count)

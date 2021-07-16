@@ -1,5 +1,5 @@
 import copy
-from dqn.modules.cnn import CNN
+from dqn.modules.cnn import CNN_FC
 from dqn.modules.fc import FC1, FC2, FC3
 from dqn.replay_buffer import ReplayBuffer
 
@@ -12,8 +12,8 @@ class QLearner:
         self.args = args
 
         self.coord_fc = FC2(3, 128, 128)
-        self.map_cnn = CNN(args)
-        self.shared_fc = FC3(259, 512, 5)
+        self.map_cnn = CNN_FC(2*args.lidar_range+1, 2*args.lidar_range+1, 128, 128)
+        self.shared_fc = FC3(259, 512, 5, last_layer_activation=False)
 
         self.params = list(self.shared_fc.parameters())
         self.params += list(self.coord_fc.parameters())
@@ -25,7 +25,7 @@ class QLearner:
         self.target_map_cnn = copy.deepcopy(self.map_cnn)
         self.target_shared_fc = copy.deepcopy(self.shared_fc)
 
-        self.replay_buffer = ReplayBuffer(args)
+        self.replay_buffer = ReplayBuffer(buffer_size= args.buffer_size, batch_size= args.batch_size)
         self.writer = writer
         self.count = 0
 
