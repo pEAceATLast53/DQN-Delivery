@@ -26,12 +26,7 @@ Every time the robot succeeds in a delivery, it receives +1.
 In addition to the sparse reward, the agent receives a progress reward, which is 0.1 * (previous_geodesic_distance_to_the_closest_order - current_geodesic_distance_to_the_closest_order).
 ## Current Progress
 - Training the agent only with the sparse reward failed.
-- Including the dense reward enabled training. Below are some of the successful episodes.
-   '''
-   --num_landmarks 2  #Total number of orders in one episode
-   --max_episode_len 100  #Episode length is 100 time steps
-   --reward_type dense
-   '''
+- Including the dense reward enabled training. Below are some of the successful episodes. The total number of orders in one episode was set to 2, and the episode length was set to 100 time steps.
    <img src="https://user-images.githubusercontent.com/86182918/126068284-b622657c-3099-41c0-a271-c46f4d83b894.gif" width="500" height="300">
    <img src="https://user-images.githubusercontent.com/86182918/126068335-0aa9fee9-18a8-45e5-b81b-b1a3415aad9c.gif" width="500" height="300">
-  However, the success rate wasn't too high. The agent was not able to succeed in orders far away and block by walls.
+However, the success rate wasn't too high. The agent was not able to succeed in orders far away and block by walls.
