@@ -9,6 +9,7 @@ To evalutate a trained model and save videos, run
 python eval.py
 ```
 The list of arguments can be found at arguments.py.
+
 To simply test the environment, run
 ```
 python test_env.py
