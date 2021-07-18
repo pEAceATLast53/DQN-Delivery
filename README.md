@@ -28,6 +28,6 @@ In addition to the sparse reward, the agent receives a progress reward, which is
 - Training the agent only with the sparse reward failed.
 - Including the dense reward enabled training. Below are some of the successful episodes. The total number of orders in one episode was set to 2, and the episode length was set to 100 time steps.
 
-   <img src="https://user-images.githubusercontent.com/86182918/126068284-b622657c-3099-41c0-a271-c46f4d83b894.gif" width="500" height="300">
-   <img src="https://user-images.githubusercontent.com/86182918/126068335-0aa9fee9-18a8-45e5-b81b-b1a3415aad9c.gif" width="500" height="300">
-However, the success rate wasn't too high. The agent was not able to succeed in orders far away and block by walls.
+      <img src="https://user-images.githubusercontent.com/86182918/126068284-b622657c-3099-41c0-a271-c46f4d83b894.gif" width="500" height="300">
+      <img src="https://user-images.githubusercontent.com/86182918/126068335-0aa9fee9-18a8-45e5-b81b-b1a3415aad9c.gif" width="500" height="300">
+      However, the success rate wasn't too high. The agent was not able to succeed in orders far away and block by walls.
