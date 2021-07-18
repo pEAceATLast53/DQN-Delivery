@@ -6,6 +6,8 @@ parser.add_argument('--map_name', default='dist_test.png')
 
 parser.add_argument('--lidar_range', default=7)
 parser.add_argument('--num_landmarks', default=8)
+parser.add_argument('--distance_type', default='both', choices = ['euc', 'geo', 'both'])
+parser.add_argument('--reward_type', default='dense', choices = ['sparse', 'dense'])
 
 parser.add_argument('--success_reward', default=1)
 parser.add_argument('--collision_penalty', default=0.1)
