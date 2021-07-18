@@ -12,8 +12,6 @@ from tensorboardX import SummaryWriter
 import numpy as np
 import copy
 
-torch.set_default_tensor_type('torch.cuda.FloatTensor')
-
 save_dir = './results'
 model_load_dir = save_dir + '/models/' + args.model_name
 render_save_dir = save_dir + '/render/' + args.model_name

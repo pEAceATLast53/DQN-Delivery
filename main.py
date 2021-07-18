@@ -11,8 +11,6 @@ import cv2, os, torch, random, joblib
 import numpy as np
 import copy
 
-torch.set_default_tensor_type('torch.cuda.FloatTensor')
-
 save_dir = './results'
 model_save_dir = save_dir + '/models/' + args.model_name
 log_dir = save_dir + '/tb_logs/' + args.model_name
