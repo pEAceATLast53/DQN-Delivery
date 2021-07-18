@@ -62,7 +62,6 @@ class World:
     def __init__(self, args):
         file_path = '/'.join(__file__.split('/')[:-1])
         self.map_img = cv2.imread(os.path.join(file_path,args.map_name), cv2.IMREAD_GRAYSCALE)
-        self.size_ratio = 1
         self.map_img[np.where(self.map_img < 225)] = 0
         self.map_img[np.where(self.map_img != 0)] = 255
 
@@ -95,18 +94,9 @@ class World:
 
         # add agents
         self.agent = Agent()
-        self.agent.collide = True
-        self.agent.color = np.array([80, 105, 127])
 
         # add landmarks
         self.landmarks = [Landmark() for i in range(num_landmarks)]
-        for i, landmark in enumerate(self.landmarks):
-            landmark.name = 'landmark %d' % i
-            landmark.collide = False
-            landmark.movable = False
-            landmark.size = 0.8
-            landmark.color = np.array([239, 111, 108])  # red
-            setattr(landmark, 'generated', False)
 
         self.SUCCESS_REWARD = args.success_reward
         self.COLLISION_PENALTY = (-1) * args.collision_penalty
