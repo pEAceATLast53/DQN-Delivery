@@ -1,43 +1,39 @@
-from arguments import args
 from env.environment import Env
 from env.world import World
 from dqn.replay_buffer import ReplayBuffer
 from dqn.q_learner import QLearner
+from arguments import args
 
 import sys
 if '/opt/ros/kinetic/lib/python2.7/dist-packages' in sys.path:
     sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2, os, torch, random, joblib
+from tensorboardX import SummaryWriter
 import numpy as np
 import copy
 
 torch.set_default_tensor_type('torch.cuda.FloatTensor')
 
 save_dir = './results'
-model_save_dir = save_dir + '/models/' + args.model_name
-log_dir = save_dir + '/tb_logs/' + args.model_name
-args.log_dir = log_dir
-args.mode = 'train'
+model_load_dir = save_dir + '/models/' + args.model_name
+render_save_dir = save_dir + '/render/' + args.model_name
 
-if not os.path.isdir(model_save_dir):
-    os.mkdir(model_save_dir)
-if not os.path.isdir(log_dir):
-    os.mkdir(log_dir)
+assert os.path.isdir(model_load_dir), "Model path does not exist"
+if not os.path.isdir(render_save_dir):
+    os.mkdir(render_save_dir)
 
 world = World(args)
 env = Env(world, reset_callback = world.reset, reward_callback = world.reward, observation_callback = world.observation, \
     info_callback = world.render, done_callback = world.done)
 
+args.mode = 'eval'
 trainer = QLearner(args)
+trainer.load_models(model_load_dir)
 trainer.cuda()
-
-epsilon = args.init_epsilon
-
-t_total = 0
 
 for episode in range(args.num_episodes):
     episode_return = 0
-    obs, _ = env.reset()
+    obs, info = env.reset()
     obs_map = obs['map']
     obs_coord_dict = obs['dists']
     obs_coord = np.full((args.num_landmarks, 3), -1)
@@ -49,18 +45,15 @@ for episode in range(args.num_episodes):
         obs_coord[idx, 2] = np.sin(obs_coord_dict[idx, 1])
     obs_prev_action = [obs['prev_action']]
     obs_pos = [world.agent.state.p_pos[0] * 0.01, world.agent.state.p_pos[1] * 0.01]
+    frames = [info]
 
     while True:
-        t_total += 1
+        a = trainer.select_action(torch.Tensor(obs_coord).cuda().float().unsqueeze(0), \
+            torch.Tensor(obs_map).cuda().float().unsqueeze(0), torch.Tensor(obs_prev_action).cuda().float().unsqueeze(0), \
+            torch.Tensor(obs_pos).cuda().float().unsqueeze(0))
 
-        if random.random() < epsilon:
-            a = random.randint(0, 4)
-        else:
-            a = trainer.select_action(torch.Tensor(obs_coord).cuda().float().unsqueeze(0), \
-                torch.Tensor(obs_map).cuda().float().unsqueeze(0), torch.Tensor(obs_prev_action).cuda().float().unsqueeze(0), \
-                torch.Tensor(obs_pos).cuda().float().unsqueeze(0))
-
-        obs_next, r, d, _ = env.step(a)
+        obs_next, r, d, info = env.step(a)
+        frames.append(info)
 
         obs_map_next = obs_next['map']
         obs_coord_next_dict = obs_next['dists']
@@ -74,17 +67,7 @@ for episode in range(args.num_episodes):
         obs_prev_action_next = [obs_next['prev_action']]
         obs_pos_next = [world.agent.state.p_pos[0] * 0.01, world.agent.state.p_pos[1] * 0.01]
 
-        trainer.replay_buffer.store(torch.Tensor([a]).cpu(), torch.Tensor([r]).cpu(), torch.Tensor([d]).cpu(), \
-            torch.Tensor(obs_map).cpu(), torch.Tensor(obs_coord).cpu(), torch.Tensor(obs_prev_action).cpu(), torch.Tensor(obs_pos).cpu(), \
-            torch.Tensor(obs_map_next).cpu(), torch.Tensor(obs_coord_next).cpu(), torch.Tensor(obs_prev_action_next).cpu(), torch.Tensor(obs_pos_next).cpu())
-
-        if trainer.replay_buffer.length >= args.update_start and t_total % args.update_interval == 0:
-            trainer.train()
-
         episode_return += r
-
-        if epsilon > args.final_epsilon:
-            epsilon -= (args.init_epsilon - args.final_epsilon) / args.epsilon_anneal_time
 
         if d:
             break
@@ -94,18 +77,14 @@ for episode in range(args.num_episodes):
         obs_prev_action = copy.deepcopy(obs_prev_action_next)
         obs_pos = copy.deepcopy(obs_pos_next)
 
-    if episode % args.target_update_interval == 0:
-        trainer.update_targets()
-
-    if episode % args.save_interval == 0:
-        trainer.save_models(model_save_dir)
-
     num_found_landmarks = 0
     for l in world.landmarks:
         if l.generated and l.found:
             num_found_landmarks += 1
-            
-    trainer.writer.add_scalar('Episode Return', episode_return, episode+1)
-    trainer.writer.add_scalar('Number of Successful Orders', num_found_landmarks, episode+1)
-    trainer.writer.add_scalar('Number of Collisions', world.collision_count, episode+1)
+    
     print("Episode : ", episode+1, "Return : ", episode_return, "# of successful orders : ", num_found_landmarks, "# of collisions : ", world.collision_count)
+
+    out = cv2.VideoWriter(os.path.join(render_save_dir, str(episode) + '.avi'), cv2.VideoWriter_fourcc(*'DIVX'), 15, (frames[0].shape[1], frames[0].shape[0]))
+    for aa in frames:
+        out.write(aa)
+    out.release()

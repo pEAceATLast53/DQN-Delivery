@@ -5,28 +5,29 @@ from dqn.replay_buffer import ReplayBuffer
 
 import torch
 from torch.optim import RMSprop
-
+from tensorboardX import SummaryWriter
 
 class QLearner:
-    def __init__(self, args, writer):
+    def __init__(self, args, writer = None):
         self.args = args
 
         self.coord_fc = FC2(3, 128, 128)
         self.map_cnn = CNN_FC(2*args.lidar_range+1, 2*args.lidar_range+1, 128, 128)
         self.shared_fc = FC3(259, 512, 5, last_layer_activation=False)
 
-        self.params = list(self.shared_fc.parameters())
-        self.params += list(self.coord_fc.parameters())
-        self.params += list(self.map_cnn.parameters())
+        if args.mode == 'train':
+            self.params = list(self.shared_fc.parameters())
+            self.params += list(self.coord_fc.parameters())
+            self.params += list(self.map_cnn.parameters())
 
-        self.optimiser = RMSprop(params=self.params, lr=args.lr, alpha=args.optim_alpha, eps=args.optim_eps)
+            self.optimiser = RMSprop(params=self.params, lr=args.lr, alpha=args.optim_alpha, eps=args.optim_eps)
 
-        self.target_coord_fc = copy.deepcopy(self.coord_fc)
-        self.target_map_cnn = copy.deepcopy(self.map_cnn)
-        self.target_shared_fc = copy.deepcopy(self.shared_fc)
+            self.target_coord_fc = copy.deepcopy(self.coord_fc)
+            self.target_map_cnn = copy.deepcopy(self.map_cnn)
+            self.target_shared_fc = copy.deepcopy(self.shared_fc)
 
-        self.replay_buffer = ReplayBuffer(buffer_size= args.buffer_size, batch_size= args.batch_size)
-        self.writer = writer
+            self.replay_buffer = ReplayBuffer(buffer_size= args.buffer_size, batch_size= args.batch_size)
+            self.writer = SummaryWriter(log_dir=args.log_dir)
         self.count = 0
 
     def train(self):
@@ -51,8 +52,9 @@ class QLearner:
         torch.nn.utils.clip_grad_norm_(self.params, 10.0)
         self.optimiser.step()
 
-        self.writer.add_scalar('Loss', self.loss.item(), self.count)
-        self.writer.add_scalar('Q Mean', chosen_q_out.mean().item(), self.count)
+        if self.writer is not None:
+            self.writer.add_scalar('Loss', self.loss.item(), self.count)
+            self.writer.add_scalar('Q Mean', chosen_q_out.mean().item(), self.count)
 
     def select_action(self, obs_coord, obs_map, obs_prev_action, obs_pos):
         with torch.no_grad():
@@ -68,11 +70,12 @@ class QLearner:
 
     def cuda(self):
         self.coord_fc.cuda()
-        self.target_coord_fc.cuda()
         self.map_cnn.cuda()
-        self.target_map_cnn.cuda()
         self.shared_fc.cuda()
-        self.target_shared_fc.cuda()
+        if self.args.mode == 'train':
+            self.target_coord_fc.cuda()
+            self.target_map_cnn.cuda()
+            self.target_shared_fc.cuda()
 
     def save_models(self, path):
         torch.save(self.coord_fc.state_dict(), "{}/coord_fc.th".format(path))
