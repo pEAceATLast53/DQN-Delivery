@@ -36,13 +36,20 @@ for episode in range(args.num_episodes):
     obs, info = env.reset()
     obs_map = obs['map']
     obs_coord_dict = obs['dists']
-    obs_coord = np.full((args.num_landmarks, 3), -1)
+    if args.distance_type == 'both':
+        obs_coord = np.full((args.num_landmarks, 4), -1)
+    else:
+        obs_coord = np.full((args.num_landmarks, 3), -1)
     for idx, l in enumerate(world.landmarks):
         if not l.generated or l.found:
             continue
-        obs_coord[idx, 0] = obs_coord_dict[idx, 0] * 0.01
-        obs_coord[idx, 1] = np.cos(obs_coord_dict[idx, 1])
-        obs_coord[idx, 2] = np.sin(obs_coord_dict[idx, 1])
+        lm_info = []
+        lm_info.append(obs_coord_dict[idx, 0] * 0.01)
+        if args.distance_type == 'both':
+            lm_info.append(obs_coord_dict[idx, 1] * 0.01)
+        lm_info.append(np.cos(obs_coord_dict[idx, -1]))
+        lm_info.append(np.sin(obs_coord_dict[idx, -1]))
+        obs_coord[idx, :] = np.array(lm_info)
     obs_prev_action = [obs['prev_action']]
     obs_pos = [world.agent.state.p_pos[0] * 0.01, world.agent.state.p_pos[1] * 0.01]
     frames = [info]
@@ -57,13 +64,20 @@ for episode in range(args.num_episodes):
 
         obs_map_next = obs_next['map']
         obs_coord_next_dict = obs_next['dists']
-        obs_coord_next = np.full((args.num_landmarks, 3), -1)
+        if args.distance_type == 'both':
+            obs_coord_next = np.full((args.num_landmarks, 4), -1)
+        else:
+            obs_coord_next = np.full((args.num_landmarks, 3), -1)
         for idx, l in enumerate(world.landmarks):
             if not l.generated or l.found:
                 continue
-            obs_coord_next[idx, 0] = obs_coord_next_dict[idx, 0] * 0.01
-            obs_coord_next[idx, 1] = np.cos(obs_coord_next_dict[idx, 1])
-            obs_coord_next[idx, 2] = np.sin(obs_coord_next_dict[idx, 1])
+            lm_info = []
+            lm_info.append(obs_coord_next_dict[idx, 0] * 0.01)
+            if args.distance_type == 'both':
+                lm_info.append(obs_coord_next_dict[idx, 1] * 0.01)
+            lm_info.append(np.cos(obs_coord_next_dict[idx, -1]))
+            lm_info.append(np.sin(obs_coord_next_dict[idx, -1]))
+            obs_coord_next[idx, :] = np.array(lm_info)
         obs_prev_action_next = [obs_next['prev_action']]
         obs_pos_next = [world.agent.state.p_pos[0] * 0.01, world.agent.state.p_pos[1] * 0.01]
 

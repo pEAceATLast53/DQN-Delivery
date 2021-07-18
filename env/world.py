@@ -187,15 +187,16 @@ class World:
         gps = []
         geo_dists = []
         for l in self.landmarks:
-            if self.distance_type == 'euc':
-                dist = self.get_euc_dist(l.state.p_pos, self.agent.state.p_pos)
-            if self.distance_type == 'geo':
+            lm_info = []
+            if self.distance_type == 'euc' or self.distance_type == 'both':
+                lm_info.append(self.get_euc_dist(l.state.p_pos, self.agent.state.p_pos))
+            if self.distance_type == 'geo' or self.distance_type == 'both':
                 if self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]] == -1:
                     self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]], _ = \
                         self.get_dist(self.agent.state.p_pos, l.state.p_pos)
                     self.geo_dist_table[l.state.p_pos[0], l.state.p_pos[1], self.agent.state.p_pos[0], self.agent.state.p_pos[1]] = \
                         self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]]
-                dist = self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]]
+                lm_info.append(self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]])
             if self.reward_type == 'dense':
                 if self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]] == -1:
                     self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]], _ = self.get_dist(self.agent.state.p_pos, l.state.p_pos)
@@ -203,8 +204,8 @@ class World:
                         self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]]
                 if l.generated and not l.found:
                     geo_dists.append(self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]])
-            direction = math.atan2(*(l.state.p_pos - self.agent.state.p_pos))
-            gps.append([dist, direction])
+            lm_info.append(math.atan2(*(l.state.p_pos - self.agent.state.p_pos)))
+            gps.append(lm_info)
         self.agent.gps = np.array(gps) 
         if len(geo_dists) > 0:
             self.prev_min_dist = min(geo_dists)
@@ -219,14 +220,15 @@ class World:
         gps = []
         geo_dists = []
         for l in self.landmarks:
-            if self.distance_type == 'euc':
-                dist = self.get_euc_dist(l.state.p_pos, self.agent.state.p_pos)
-            if self.distance_type == 'geo':
+            lm_info = []
+            if self.distance_type == 'euc' or self.distance_type == 'both':
+                lm_info.append(self.get_euc_dist(l.state.p_pos, self.agent.state.p_pos))
+            if self.distance_type == 'geo' or self.distance_type == 'both':
                 if self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]] == -1:
                     self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]], _ = self.get_dist(self.agent.state.p_pos, l.state.p_pos)
                     self.geo_dist_table[l.state.p_pos[0], l.state.p_pos[1], self.agent.state.p_pos[0], self.agent.state.p_pos[1]] = \
                         self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]]
-                dist = self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]]
+                lm_info.append(self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]])
             if self.reward_type == 'dense':
                 if self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]] == -1:
                     self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]], _ = self.get_dist(self.agent.state.p_pos, l.state.p_pos)
@@ -234,8 +236,8 @@ class World:
                         self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]]
                 if l.generated and not l.found:
                     geo_dists.append(self.geo_dist_table[self.agent.state.p_pos[0], self.agent.state.p_pos[1], l.state.p_pos[0], l.state.p_pos[1]])
-            direction = math.atan2(*(l.state.p_pos - self.agent.state.p_pos))
-            gps.append([dist,direction])
+            lm_info.append(math.atan2(*(l.state.p_pos - self.agent.state.p_pos)))
+            gps.append(lm_info)
         self.agent.gps = np.array(gps)
         if len(geo_dists) > 0:
             self.curr_min_dist = min(geo_dists)

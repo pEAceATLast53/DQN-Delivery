@@ -11,7 +11,7 @@ class QLearner:
     def __init__(self, args, writer = None):
         self.args = args
 
-        self.coord_fc = FC2(3, 128, 128)
+        self.coord_fc = FC2(4 if args.distance_type=='both' else 3, 128, 128)
         self.map_cnn = CNN_FC(2*args.lidar_range+1, 2*args.lidar_range+1, 128, 128)
         self.shared_fc = FC3(259, 512, 5, last_layer_activation=False)
 
