@@ -18,7 +18,7 @@ python test_env.py
 <img src="https://user-images.githubusercontent.com/86182918/124696488-25bca680-df20-11eb-82c4-00452757d20c.gif" width="500" height="300">
    The delivery robot(red cross) navigates around the grid map to deliver food to the customers. The orders are initiated at random time steps, on random grids throughout the episode. When an order is initiated, its grid location is marked by a blue cross in the picture above. The total number of orders in one episode is fixed. In order to succeed in a delivery, the robot has to go to the same grid as the corresponding blue cross. The goal is to train the robot to succeed in all the deliveries in each episode. As the robot navigates, it must avoid static obstacles. In the picture above, the black grids are static obstacles, while the white grids are free space.
    
-   - A grid in which an order takes place is called 'landmark' in the code.
+   - A grid in which an active order takes place is called 'landmark' in the code.
 
 ## DQN
 The robot is trained by DQN.
@@ -34,7 +34,7 @@ If the robot's action results in a collision, then the robot stays on the same g
 4. Robot's current coordinate.
 5. Robot's previous action.
 ### Reward
-If the robot's action will result in a collision with a static obstacle, it receives a penalty of -0.1. It also receives a -0.01 penalty per each remaining order that has been initiated.
+If the robot's action will result in a collision with a static obstacle, it receives a penalty of -0.1. It also receives a -0.01 penalty per each active order.
 #### Sparse Reward
 Every time the robot succeeds in a delivery, it receives +1.
 #### Dense Reward
