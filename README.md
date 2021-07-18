@@ -30,6 +30,9 @@ If the robot's action results in a collision, then the robot stays on the same g
    - 1st channel : Grid map indicating the static obstacles around the robot
    - 2nd channel : One-hot encodings indicating the locations of the orders that are within the range of the local map.
 2. Distance to the orders.
+   - --distance_type euc : Euclidean distance
+   - --distance_type geo : Geodesic distance
+   - --distance_type both : Both Euclidean and geodesic distances
 3. Bearing angles to the orders.
 4. Robot's current coordinate.
 5. Robot's previous action.
