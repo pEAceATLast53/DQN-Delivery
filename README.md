@@ -45,5 +45,5 @@ In addition to the sparse reward, the agent receives a progress reward, which is
 ## Current Progress
 1. Training the agent only with the sparse reward failed. (--num_landmarks 2, --max_episode_len 100, --reward_type sparse, --distance_type euc, --lidar_range 7)
 2. Including the dense reward enabled training. Below are some of the successful episodes. (--num_landmarks 2, --max_episode_len 100, --reward_type dense, --distance_type euc, --lidar_range 15)
-   <img src="https://user-images.githubusercontent.com/86182918/126624153-4bedebe1-b127-428f-9a8e-0781c5941538.gif" width="500" height="300">
-   <img src="https://user-images.githubusercontent.com/86182918/126624234-ce5ebb38-3268-4a4a-9177-defdeec6f428.gif" width="500" height="300">
+   - <img src="https://user-images.githubusercontent.com/86182918/126624153-4bedebe1-b127-428f-9a8e-0781c5941538.gif" width="500" height="300">
+   - <img src="https://user-images.githubusercontent.com/86182918/126624234-ce5ebb38-3268-4a4a-9177-defdeec6f428.gif" width="500" height="300">
