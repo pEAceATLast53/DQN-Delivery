@@ -43,9 +43,7 @@ Every time the robot succeeds in a delivery, it receives +1.
 #### Dense Reward
 In addition to the sparse reward, the agent receives a progress reward, which is 0.1 * (previous_geodesic_distance_to_the_closest_order - current_geodesic_distance_to_the_closest_order).
 ## Current Progress
-1. Training the agent only with the sparse reward failed. (--num_landmarks 2, --max_episode_len 100, --reward_type sparse, --distance_type euc)
-2. Including the dense reward enabled training. Below are some of the successful episodes. (--num_landmarks 2, --max_episode_len 100, --reward_type dense, --distance_type euc)
-
-   - <img src="https://user-images.githubusercontent.com/86182918/126068284-b622657c-3099-41c0-a271-c46f4d83b894.gif" width="500" height="300">
-   - <img src="https://user-images.githubusercontent.com/86182918/126068335-0aa9fee9-18a8-45e5-b81b-b1a3415aad9c.gif" width="500" height="300">
-   - However, the success rate wasn't too high. The agent was not able to succeed in orders far away and blocked by walls.
+1. Training the agent only with the sparse reward failed. (--num_landmarks 2, --max_episode_len 100, --reward_type sparse, --distance_type euc, --lidar_range 7)
+2. Including the dense reward enabled training. Below are some of the successful episodes. (--num_landmarks 2, --max_episode_len 100, --reward_type dense, --distance_type euc, --lidar_range 15)
+   <img src="https://user-images.githubusercontent.com/86182918/126624153-4bedebe1-b127-428f-9a8e-0781c5941538.gif" width="500" height="300">
+   <img src="https://user-images.githubusercontent.com/86182918/126624234-ce5ebb38-3268-4a4a-9177-defdeec6f428.gif" width="500" height="300">
