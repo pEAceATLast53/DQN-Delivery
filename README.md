@@ -26,7 +26,7 @@ The robot is trained by DQN.
 The robot moves one grid in the N, W, S, E direction, or stays on the same grid in each time step.
 If the robot's action results in a collision, then the robot stays on the same grid.
 ### Observation
-1. 15 x 15 Egocentric Local Map
+1. (2 x lidar_range) x (2 x lidar_range) Egocentric Local Map
    - 1st channel : Grid map indicating the static obstacles around the robot
    - 2nd channel : One-hot encodings indicating the locations of the orders that are within the range of the local map.
 2. Distance to the orders.
