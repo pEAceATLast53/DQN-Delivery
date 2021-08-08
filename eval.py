@@ -10,7 +10,6 @@ if '/opt/ros/kinetic/lib/python2.7/dist-packages' in sys.path:
 import cv2, os, torch, random, joblib
 from tensorboardX import SummaryWriter
 import numpy as np
-import copy
 
 save_dir = './results'
 model_load_dir = save_dir + '/models/' + args.model_name
@@ -33,7 +32,7 @@ for episode in range(args.num_episodes):
     episode_return = 0
     obs, info = env.reset()
     obs_map = obs['map']
-    obs_coord_dict = obs['dists']
+    obs_coord_raw = obs['dists']
     if args.distance_type == 'both':
         obs_coord = np.full((args.num_landmarks, 4), -1)
     else:
@@ -42,11 +41,11 @@ for episode in range(args.num_episodes):
         if not l.generated or l.found:
             continue
         lm_info = []
-        lm_info.append(obs_coord_dict[idx, 0] * 0.01)
+        lm_info.append(obs_coord_raw[idx, 0] * 0.01)
         if args.distance_type == 'both':
-            lm_info.append(obs_coord_dict[idx, 1] * 0.01)
-        lm_info.append(np.cos(obs_coord_dict[idx, -1]))
-        lm_info.append(np.sin(obs_coord_dict[idx, -1]))
+            lm_info.append(obs_coord_raw[idx, 1] * 0.01)
+        lm_info.append(np.cos(obs_coord_raw[idx, -1]))
+        lm_info.append(np.sin(obs_coord_raw[idx, -1]))
         obs_coord[idx, :] = np.array(lm_info)
     obs_prev_action = [obs['prev_action']]
     obs_pos = [world.agent.state.p_pos[0] * 0.01, world.agent.state.p_pos[1] * 0.01]
@@ -61,7 +60,7 @@ for episode in range(args.num_episodes):
         frames.append(info)
 
         obs_map_next = obs_next['map']
-        obs_coord_next_dict = obs_next['dists']
+        obs_coord_next_raw = obs_next['dists']
         if args.distance_type == 'both':
             obs_coord_next = np.full((args.num_landmarks, 4), -1)
         else:
@@ -70,11 +69,11 @@ for episode in range(args.num_episodes):
             if not l.generated or l.found:
                 continue
             lm_info = []
-            lm_info.append(obs_coord_next_dict[idx, 0] * 0.01)
+            lm_info.append(obs_coord_next_raw[idx, 0] * 0.01)
             if args.distance_type == 'both':
-                lm_info.append(obs_coord_next_dict[idx, 1] * 0.01)
-            lm_info.append(np.cos(obs_coord_next_dict[idx, -1]))
-            lm_info.append(np.sin(obs_coord_next_dict[idx, -1]))
+                lm_info.append(obs_coord_next_raw[idx, 1] * 0.01)
+            lm_info.append(np.cos(obs_coord_next_raw[idx, -1]))
+            lm_info.append(np.sin(obs_coord_next_raw[idx, -1]))
             obs_coord_next[idx, :] = np.array(lm_info)
         obs_prev_action_next = [obs_next['prev_action']]
         obs_pos_next = [world.agent.state.p_pos[0] * 0.01, world.agent.state.p_pos[1] * 0.01]
@@ -84,10 +83,10 @@ for episode in range(args.num_episodes):
         if d:
             break
 
-        obs_map = copy.deepcopy(obs_map_next)
-        obs_coord = copy.deepcopy(obs_coord_next)
-        obs_prev_action = copy.deepcopy(obs_prev_action_next)
-        obs_pos = copy.deepcopy(obs_pos_next)
+        obs_map = obs_map_next
+        obs_coord = obs_coord_next
+        obs_prev_action = obs_prev_action_next
+        obs_pos = obs_pos_next
 
     num_found_landmarks = 0
     for l in world.landmarks:
