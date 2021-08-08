@@ -8,7 +8,6 @@ import sys
 if '/opt/ros/kinetic/lib/python2.7/dist-packages' in sys.path:
     sys.path.remove('/opt/ros/kinetic/lib/python2.7/dist-packages')
 import cv2, os, torch, random, joblib
-from tensorboardX import SummaryWriter
 import numpy as np
 
 save_dir = './results'
