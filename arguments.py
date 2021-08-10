@@ -18,7 +18,7 @@ parser.add_argument("--num-episodes", type=int, default=50000, help="number of e
 parser.add_argument("--update_start", default=10000)  # Start training model after _ steps
 parser.add_argument("--save_interval", default=10000)   # Save model every _ steps
 
-parser.add_argument('--model_name', default='2_100_euc_dense_range_40', type=str)
+parser.add_argument('--model_name', default='euc_dense_range_40', type=str)
 
 # RL hyperparameters
 parser.add_argument('--target_update_interval', default=200, type=int)  #Update target every _ episodes
