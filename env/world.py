@@ -145,7 +145,7 @@ class World:
             np.where(candidate_area_idx==candi_idx, -1, candidate_area_idx)
 
         init_landmarks = 1 # landmarks which are generated in the first step
-        limit_time_ratio = 0.8
+        limit_time_ratio = 0.2
         limit_time = int(self.max_episode_len * limit_time_ratio)
         landmark_times = np.random.choice(range(limit_time), len(self.landmarks)-init_landmarks, replace=False)
         landmark_times = np.concatenate(([0]*init_landmarks, landmark_times), 0)
