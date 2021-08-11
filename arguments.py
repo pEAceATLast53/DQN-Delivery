@@ -14,9 +14,9 @@ parser.add_argument('--collision_penalty', default=0.1)
 parser.add_argument('--time_penalty', default=0.01)
 
 parser.add_argument('--max_episode_len', default=500)
-parser.add_argument("--num-episodes", type=int, default=50000, help="number of episodes")
+parser.add_argument("--num-episodes", type=int, default=100000, help="number of episodes")
 parser.add_argument("--update_start", default=10000)  # Start training model after _ steps
-parser.add_argument("--save_interval", default=10000)   # Save model every _ steps
+parser.add_argument("--save_interval", default=5000)   # Save model every _ episodes
 
 parser.add_argument('--model_name', default='euc_dense_range_40', type=str)
 
